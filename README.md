@@ -1,51 +1,74 @@
+[![简体中文](https://img.shields.io/badge/-简体中文-blue?style=flat-square)](README.zh-CN.md)
+
 # writing-standards
 
-> 一个 Agent Skill：把成体系的语言标准（ASD-STE100、Plain Language、BLUF、金字塔原理、Assertion-Evidence、PLS、GB/T 9704……）用到你的每一次写作上——写汇报、论文、pre、科普、技术文档、公文之前，先选型、套规则、验收。
->
-> An Agent Skill that applies established writing & language standards (ASD-STE100, plain language, BLUF, Minto Pyramid, assertion-evidence, PLS…) to any document you write — pick the right standard, apply its rules, verify readability.
+Select the right writing standard for a task. Nothing else.
 
-灵感来自 Andrej Karpathy 的技巧（2026-10）：**在提示词里报标准全名**，让 LLM 按该标准写作——
-"Ask your LLM to explain something in ASD-STE100… heavy constraints on clean writing style that I often find a lot more readable."
+An Agent Skill for Claude Code and compatible agents. It asks three questions. It picks a language standard for your scenario. It returns a style specification. The calling task then writes the content in that style.
 
-## 安装（Claude Code）
+Inspired by Andrej Karpathy (2026-10): name a writing standard in your prompt (for example, ASD-STE100), and language models follow it well.
+
+## What it does — and does not do
+
+This skill does three things:
+
+1. Ask. Purpose and reader. Scenario. Context (format, tone, length).
+2. Select. One main standard for structure. One secondary standard for sentences.
+3. Return. A style specification: standard name, structure rules, sentence rules, acceptance checks.
+
+This skill does not write content. It does not handle layout or file format. Format (txt, md, HTML, PPT) belongs to the calling task. It does not run acceptance checks.
+
+## Install
 
 ```bash
-# 用户级（所有项目可用）——推荐
+# user level (all projects) — recommended
 cp -r writing-standards ~/.claude/skills/
 
-# 或项目级（只在当前仓库可用）
+# or project level (one repository)
 cp -r writing-standards .claude/skills/
 ```
 
-装完即生效：Claude 在写作/改写/评审文本时会**自动触发**；也可以手动点名 `/writing-standards`。
-（Agent Skills 是开放标准，Codex / Cursor 等兼容 agent 同样可读此目录。）
+Claude Code loads the skill when a task needs a style decision. You can also invoke it with `/writing-standards`.
 
-## 它做什么（职责很窄，故意的）
+## Use
 
-**只干一件事：为任务选文风。** 不写内容、不管载体排版——txt / md / HTML / PPT 由调用方任务负责。
+Direct use: ask which standard fits your text.
 
-1. **先问**：目的/读者、场景、上下文（除非任务里已经写明）。
-2. **再裁**：按场景选型——汇报→BLUF/金字塔；pre→Assertion-Evidence；论文→期刊体例+IMRaD；科普→Plain Language+PLS；技术文档→ASD-STE100；中文公文→GB/T 9704。
-3. **输出「文风规格」**：选定标准（全名）+ 结构规则 + 句子规则（公分母六条）+ 验收线——一份可注入任何写作任务的样式条款。
+Wrapped use: set the style as a constraint inside a larger task.
 
-**包裹调用示例**：「写一个 HTML 教材，语言规范用 ASD-STE100」→ 本 skill 产出文风规格，HTML 写作由主任务执行。
+> Write an HTML tutorial about SSH. For the language style, use ASD-STE100 Simplified Technical English. Run /writing-standards first and return the style specification.
 
-另附卡帕西提示词技巧：报标准全名触发；"80% of the way to X" 软化。
+The skill returns the specification. The main task applies it. The skill skips its questions when the context already states the scenario.
 
-## 目录结构（渐进披露，三层加载）
+## Scenario map (short form)
+
+| Scenario | Main standard (structure) | Sentence standard |
+|---|---|---|
+| Report to an advisor or manager | BLUF / Minto Pyramid | one idea per sentence |
+| Academic paper | journal guidelines + IMRaD | STE discipline in Methods |
+| Plain version of a paper | Plain Language Summary (PLS) | ClinicalTrials word list |
+| Slide deck | Assertion-Evidence | slide title states the claim |
+| Science communication | plain language ideas | ClinicalTrials word list |
+| Technical documentation | ASD-STE100, or its "80% path" | STE rules |
+| Chinese official document | GB/T 9704-2012 | GB/T 15834 punctuation |
+| Email | BLUF | common rules |
+
+The full archive (eight standard families, per-standard rules, sources) lives in [references/standards-map.md](references/standards-map.md).
+
+## Repository layout
 
 ```
 writing-standards/
-├── SKILL.md                    # 第二层：命中任务才载入的操作手册（<500 行）
+├── SKILL.md                  # selection workflow; loads when triggered
 ├── references/
-│   └── standards-map.md        # 第三层：八大类标准全景档案 + 来源（按需查）
-├── README.md                   # 本文件（给 GitHub 读者）
-└── LICENSE                     # MIT
+│   └── standards-map.md      # standards archive + sources; loads on demand
+├── README.md                 # this file
+├── README.zh-CN.md           # Chinese version
+└── LICENSE                   # MIT
 ```
 
-启动时只加载 `SKILL.md` 头部的 name+description（约 100 token）——上下文占用极小。
+## Credits and disclaimer
 
-## 免责声明
+Prompt trick: Andrej Karpathy, 2026-10 ([original post](https://x.com/karpathy/status/2105819303471976479)). All research sources are listed in the archive.
 
-本项目是独立整理的学习指南，与 ASD、ISMPP、欧盟委员会等标准组织无隶属关系。
-ASD-STE100 等标准名称归其各自所有者；本项目只引名称与公开概述，不转载受版权保护的词表/规则原文。
+This project is an independent guide. It is not affiliated with ASD, ISMPP, or the European Commission. Standard names belong to their owners. This project cites names and public summaries only. It does not reproduce copyrighted dictionaries or rule texts.
